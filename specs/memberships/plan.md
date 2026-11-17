@@ -1,0 +1,96 @@
+# Plan de implementación — Membresías y pagos
+
+**Feature ID:** F4
+**Estado:** pendiente
+**Estimación:** 1 día
+**Precondición:** F1, F2 y Fase 0 (cliente API, formateo)
+
+---
+
+## 1. Archivos a crear
+
+```
+app/(app)/memberships/page.tsx
+app/(app)/memberships/loading.tsx
+src/api/memberships.ts
+src/components/features/memberships/membership-chip.tsx
+src/components/features/memberships/membership-summary-card.tsx
+src/components/features/memberships/membership-status-badge.tsx
+src/components/features/memberships/membership-empty-state.tsx
+src/lib/membership-view.ts
+src/lib/membership-view.spec.ts
+tests/e2e/memberships.spec.ts
+```
+
+> La vista administrativa («Registrar pago», listado y métricas) se implementa en F7; F4 aporta el contrato, el mapper y el chip reutilizable.
+
+---
+
+## 2. Tareas
+
+### 2.1 Datos
+
+- [ ] `src/api/memberships.ts`: `getMyMemberships()` y `getMemberships()` con `cache: 'no-store'` y normalización `data` → arreglo.
+- [ ] `src/lib/membership-view.ts`: `toMembershipView()`, `pickCurrent()`, `getDaysRemaining()`, `getStatusLabel()`.
+- [ ] `pickCurrent()` prioriza `ACTIVE`, luego `end_date` más cercano; si no hay activas, devuelve la más reciente.
+- [ ] Exponer `hasActiveMembership` y `planName` para el chip del encabezado.
+
+### 2.2 UI de atleta
+
+- [ ] `MembershipChip` muestra `plan_name` («Libre mensual») y se inyecta en F5 y F6 desde el layout.
+- [ ] Si no hay membresía activa, el chip se oculta sin afectar el encabezado.
+- [ ] `page.tsx` renderiza plan, importe formateado, estado, vigencia y aviso de vencimiento próximo.
+- [ ] `MembershipEmptyState` con CTA a `/classes`.
+- [ ] La card no muestra IDs, `notes` internas ni `created_by`.
+
+### 2.3 Vista ADMIN (contrato compartido con F7)
+
+- [ ] `getMemberships({ status, from, to, page, limit })` con `meta.total`.
+- [ ] Copy fijo «Membresías y pagos mensuales» / «Vigencias claras. Cuentas al día.».
+- [ ] Acción «Registrar pago» con `Idempotency-Key` estable por intención.
+- [ ] No renderizar tarjetas para las métricas `130`/`18`/`$6.240.000` hasta confirmar sus rótulos.
+
+### 2.4 Estados y responsive
+
+- [ ] `loading.tsx` con skeleton de la card y del chip.
+- [ ] Error local con `role="alert"` y botón «Reintentar».
+- [ ] Card apilada en móvil, ancho completo; en desktop comparte grid con el resto del contenido.
+- [ ] Contraste del badge de estado verificado.
+
+---
+
+## 3. Pruebas
+
+- [ ] `getDaysRemaining('2026-11-30', '2026-11-17') === 13`.
+- [ ] `getDaysRemaining('2026-11-17', '2026-11-17') === 0` → «Vigente hasta hoy».
+- [ ] `getStatusLabel` para los cuatro estados.
+- [ ] `pickCurrent()` elige la ACTIVE con `end_date` más próximo.
+- [ ] `formatCurrency(6240000) === '$6.240.000'`.
+- [ ] `MembershipChip` se oculta con `planName` nulo.
+- [ ] E2E: chip «Libre mensual» visible en `/classes` y `/bookings`.
+- [ ] E2E: plan e importe exactos del diseño en `/memberships`.
+- [ ] E2E: membresía vencida no muestra badge «Al día».
+
+---
+
+## 4. Definition of Done
+
+- [ ] Chip reutilizable por F5 y F6 con props serializables.
+- [ ] Importe con formato `es-PY` / PYG.
+- [ ] `end_date` inclusivo implementado.
+- [ ] Cuatro estados de UI.
+- [ ] Contrato de escritura ADMIN documentado y consumido por F7.
+- [ ] Métricas no confirmadas ausentes del DOM.
+- [ ] `npm run lint` y `npm run build` en verde.
+
+---
+
+## 5. Riesgos
+
+| Riesgo | Mitigación |
+|--------|------------|
+| `GET /memberships/me` devuelve objeto en vez de array | Normalizador en `src/api/memberships.ts` |
+| Varias membresías activas solapadas | Regla RN-FE-MEM-01 explícita |
+| Diferencia de días dependiente del reloj del servidor | Helper con zona `America/Asuncion` y fecha inyectable en tests |
+| Métricas del diseño se interpreten mal | Tarjetas omitidas hasta confirmar rótulos en `design-reference.md` |
+| Chip cargue tarde en F5/F6 | Resolverse en el layout y pasarse como prop serializable |
