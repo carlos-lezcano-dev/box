@@ -1,0 +1,16 @@
+{
+  "name": "box",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./build",
+    "not_found_handling": "single-page-application"
+  },
+  "env": {
+    "dev": {
+      "name": "box-dev",
+      "vars": {
+        "ENVIRONMENT": "development"
+      }
+    }
+  }
+}
