@@ -80,9 +80,9 @@ F7 reúne las pantallas administrativas recuperadas por OCR de las capturas de `
 |-------|-------------------------|
 | `ADMIN` | Acceso completo a las cuatro subvistas y a todas las escrituras: alta de usuarios, alta/edición/cancelación de turnos, cancelación de reservas ajenas, registro de pagos y cambio de estado de membresías. |
 | `COACH` | No ve el menú de F7. El backend permite `GET /wods/:wod_id/bookings` para el coach asignado, pero esta feature no expone esa ruta en v1. |
-| `ATHLETE` | Sin acceso al menú ni a las rutas; el backend responde `403 AUTH_FORBIDDEN` si se fuerzan los endpoints. |
+| `ATHLETE` | Sin acceso al menú ni a las rutas por decisión de producto. El layout de F7 bloquea `/admin/**` con «Acceso restringido». |
 
-> Ocultar el menú es UX; la autoridad la tienen los guards del backend. Un `403` se trata como «acceso restringido», no como sesión expirada.
+> **Ajuste verificado contra `box-core`:** el backend **no** responde 403 universal a un ATHLETE. Los guards globales solo exigen autenticación salvo `@Roles()`: `GET /wods`, `GET /wods/:id` y `GET /bookings/me` son accesibles para cualquier usuario autenticado. Son ADMIN-only `GET /users`, `GET /users/:id`, `DELETE /wods/:id` y `GET/POST/PATCH /memberships`; COACH/ADMIN pueden `POST /wods`, `PATCH /wods/:id` y ver el roster asignado. Por eso el bloqueo de F7 es del layout, y un `403` real se trata como «acceso restringido», no como sesión expirada.
 
 ---
 
@@ -109,7 +109,7 @@ F7 reúne las pantallas administrativas recuperadas por OCR de las capturas de `
 | RN-FE-ADM-17 | Las iniciales de participantes se derivan de `full_name` con un helper; las secuencias `NA`, `CR`, `MS`, `JN` y los nombres del OCR son ejemplos recortados y no se emparejan de forma rígida. La waitlist se ordena por `position ASC` y esa posición nunca se cachea. |
 | RN-FE-ADM-18 | Cancelar una reserva ajena requiere confirmación y llama a `DELETE /bookings/:booking_id`. Si `promoted: true`, se muestra `role="status"`: «Se promovió a la siguiente persona de la lista de espera» y se refresca el roster. |
 | RN-FE-ADM-19 | Editar un turno usa `PATCH /wods/:id`; cancelarlo usa `DELETE /wods/:id` con confirmación y muestra `cancelled_bookings`. No se ofrecen acciones sobre turnos iniciados: se respeta `WOD_ALREADY_STARTED`. |
-| RN-FE-ADM-20 | La subvista de membresías usa `GET /memberships` (ADMIN) y `POST /memberships` con `Idempotency-Key` estable por intención. No modifica `/memberships` de F4, que sigue consumiendo `/memberships/me`. |
+| RN-FE-ADM-20 | La subvista de membresías usa `GET /memberships` (ADMIN) y `POST /memberships`. F7 envía siempre una `Idempotency-Key` estable por intención, aunque el backend la acepta como opcional; no se espera un 400 por omitirla. No modifica `/memberships` de F4, que sigue consumiendo `/memberships/me`. |
 | RN-FE-ADM-21 | El cambio de estado usa `PATCH /memberships/:id/status` solo con `ACTIVE`, `FROZEN` o `CANCELLED`. No existe acción para `EXPIRED`: ese estado lo asigna el job del backend. Una transición inválida muestra `MEMBERSHIP_INVALID_TRANSITION`. |
 | RN-FE-ADM-22 | Las cuatro métricas de membresías se muestran con etiqueta «Pendiente de confirmación» mientras no se valide su significado. `$6.240.000` no se presenta como `amount_paid` de un único pago: supera el máximo de 1 000 000 por registro del contrato. |
 | RN-FE-ADM-23 | `GET /memberships` filtra por `from`/`to` sobre `end_date`, no sobre fecha de pago. No se suman páginas parciales para simular totales de cobros. |
@@ -117,6 +117,10 @@ F7 reúne las pantallas administrativas recuperadas por OCR de las capturas de `
 | RN-FE-ADM-25 | Tablas con scroll horizontal en móvil y tarjetas apiladas < 768 px. Diálogos con `role="dialog"`, `aria-modal`, foco inicial y cierre con `Escape`; enlace activo con `aria-current="page"`. |
 | RN-FE-ADM-26 | Todo datetime viaja en UTC con `Z` y se presenta con `Intl.DateTimeFormat('es-PY', { timeZone: 'America/Asuncion' })`. Se reutilizan los helpers de F6 en vez de copiarlos. |
 | RN-FE-ADM-27 | Las etiquetas de rol son `ATHLETE → Atleta`, `COACH → Entrenador`, `ADMIN → Administrador`. Los badges incluyen texto, no solo color. |
+| RN-FE-ADM-28 | Un `amount_paid` inválido se mapea desde **400 `VALIDATION_ERROR`** con `error.details[].field === 'amount_paid'`. `MEMBERSHIP_INVALID_AMOUNT` (422) se maneja solo por robustez: el DTO del backend valida antes y ese 422 no llega por HTTP. |
+| RN-FE-ADM-29 | La paginación considera `meta.total_pages === 0` como lista vacía y deshabilita «siguiente» cuando `page >= meta.total_pages`; nunca asume un mínimo de una página. |
+| RN-FE-ADM-30 | `to` en `GET /wods` es exclusivo. La agenda lunes → viernes envía el sábado `00:00` de `America/Asuncion` como `to`; un rango > 31 días se trata como 400 `VALIDATION_ERROR` con `details[].field === 'to'` y `rule === 'range'`. |
+| RN-FE-ADM-31 | `POST /users/register` usa `@OptionalAuth()`: F7 no adjunta un token expirado en esa llamada. Si la sesión del administrador no es válida, se renueva antes de dar de alta o se muestra el error de sesión, sin reintentar con el token vencido. |
 
 > Errata corregida: el OCR leyó `Molina` de forma aislada en el listado de usuarios; se propone `Carolina Molina` por el coach del mismo diseño, marcado como pendiente de confirmación en §6.
 
@@ -295,7 +299,7 @@ Escenario: Usuario sin rol ADMIN
 | Detalle y espera | `GET /wods/:id`, `GET /wods/:id/bookings`, `DELETE /bookings/:id` | `box-core/specs/wods/api.md` y `bookings/api.md` |
 | Membresías ADMIN | `GET /memberships`, `POST /memberships`, `PATCH /memberships/:id/status` | `box-core/specs/memberships/api.md` |
 
-Todos los endpoints salvo `POST /users/register` usan JWT Bearer. En F7 el registro también se llama con token ADMIN para poder enviar `role`. El envelope es `success` / `data` / `meta` y los errores exponen `error.code` y `request_id`; ver `api.md`.
+Todos los endpoints salvo `POST /users/register` usan JWT Bearer. En F7 el registro también se llama con token ADMIN para poder enviar `role`, con la salvedad de RN-FE-ADM-31 (token expirado → 401). El envelope es `success` / `data` / `meta`, `meta` solo aparece en listados y `total_pages` puede ser `0`; los errores exponen `error.code` y `request_id`; ver `api.md`.
 
 ### 6.2 Datos confirmados
 

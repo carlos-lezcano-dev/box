@@ -1,7 +1,7 @@
 # Plan de implementación — Panel general
 
 **Feature ID:** F3
-**Estado:** pendiente
+**Estado:** completo
 **Estimación:** 0,5 día
 **Precondición:** F1, F2 y Fase 0 (cliente API, formateo, guard de rol)
 
@@ -28,49 +28,49 @@ tests/e2e/panel-general.spec.ts
 
 ### 2.1 Datos
 
-- [ ] `src/api/dashboard.ts`: `getPanelMetrics()` con `Promise.allSettled` para `/users`, `/memberships` y `/wods`.
-- [ ] Leer `meta.total`, nunca `data.length`, para los contadores.
-- [ ] `src/lib/dashboard-view.ts`: `toPanelGeneralView()` con `null` para métricas sin fuente.
-- [ ] No crear tarjetas para `86`, `72%`, `76%` ni `10:12` hasta confirmar su significado.
+- [x] `src/api/dashboard.ts`: `getPanelMetrics()` con `Promise.allSettled` para `/users`, `/memberships` y `/wods`.
+- [x] Leer `meta.total`, nunca `data.length`, para los contadores.
+- [x] `src/lib/dashboard-view.ts`: `toPanelGeneralView()` con `null` para métricas sin fuente.
+- [x] No crear tarjetas para `86`, `72%`, `76%` ni `10:12` hasta confirmar su significado.
 
 ### 2.2 UI y guard
 
-- [ ] `app/(app)/page.tsx`: `const user = await requireUser()`; si `role !== 'ADMIN'`, `redirect('/classes?from=<hoy>')`.
-- [ ] `PanelHeader` con «Panel general administrativo», «BOX» y «Todo listo para un día más fuerte.».
-- [ ] `MetricCard` con `tabular-nums`, soporte de `null` (ocultar) y estado de error local.
-- [ ] `NextWodsCard` con hora en `America/Asuncion` y hasta 5 turnos ordenados.
-- [ ] `401` redirige a `/login?next=/`; `403` muestra «Acceso restringido».
-- [ ] El enlace «Panel general» del menú F2 apunta a `/` y no genera un dashboard duplicado.
+- [x] `app/(app)/page.tsx`: `const user = await requireUser()`; si `role !== 'ADMIN'`, `redirect('/classes?from=<hoy>')`.
+- [x] `PanelHeader` con «Panel general administrativo», «BOX» y «Todo listo para un día más fuerte.».
+- [x] `MetricCard` con `tabular-nums`, soporte de `null` (ocultar) y estado de error local.
+- [x] `NextWodsCard` con hora en `America/Asuncion` y hasta 5 turnos ordenados.
+- [x] `401` redirige a `/login?next=/`; `403` muestra «Acceso restringido».
+- [x] El enlace «Panel general» del menú F2 apunta a `/` y no genera un dashboard duplicado.
 
 ### 2.3 Estados y responsive
 
-- [ ] Usar el `Suspense`/boundary heredado de F2; además, cada métrica con su propio boundary local.
-- [ ] Grid de 4 columnas en desktop, 2 en tablet y apilado en móvil.
-- [ ] Contraste AA verificado en texto sobre superficies oscuras.
+- [x] Usar el `Suspense`/boundary heredado de F2; además, cada métrica con su propio boundary local.
+- [x] Grid de 4 columnas en desktop, 2 en tablet y apilado en móvil.
+- [x] Contraste AA verificado en texto sobre superficies oscuras.
 
 ---
 
 ## 3. Pruebas
 
-- [ ] `toPanelGeneralView()` usa `meta.total` con `limit=1`.
-- [ ] Métricas sin fuente devuelven `null` y no generan tarjeta.
-- [ ] Formato de `$6.240.000` con `es-PY`/PYG.
-- [ ] Horarios convertidos a `America/Asuncion` (`18:00Z` → `15:00` local, según caso).
-- [ ] E2E: ADMIN ve «Panel general administrativo» y los contadores en `/`.
-- [ ] E2E: ATHLETE y COACH en `/` caen en `/classes`.
-- [ ] E2E: fallo de `/memberships` no rompe el resto del panel.
+- [x] `toPanelGeneralView()` usa `meta.total` con `limit=1`.
+- [x] Métricas sin fuente devuelven `null` y no generan tarjeta.
+- [x] Formato de `$6.240.000` con `es-PY`/PYG.
+- [x] Horarios convertidos a `America/Asuncion` (`18:00Z` → `15:00` local, según caso).
+- [x] E2E: ADMIN ve «Panel general administrativo» y los contadores en `/`.
+- [x] E2E: ATHLETE y COACH en `/` caen en `/classes`.
+- [x] E2E: fallo de `/memberships` no rompe el resto del panel.
 
 ---
 
 ## 4. Definition of Done
 
-- [ ] Copy exacto del diseño en encabezado y subtítulo.
-- [ ] Contadores derivados de `meta.total`.
-- [ ] Métricas no confirmadas ausentes del DOM.
-- [ ] Guard de rol en servidor + redirect para atletas y coaches.
-- [ ] Cuatro estados por tarjeta (loading/empty/error/success).
-- [ ] Sin grupo `(admin)` ni ruta `/admin` duplicada con F7.
-- [ ] `npm run lint` y `npm run build` en verde.
+- [x] Copy exacto del diseño en encabezado y subtítulo.
+- [x] Contadores derivados de `meta.total`.
+- [x] Métricas no confirmadas ausentes del DOM.
+- [x] Guard de rol en servidor + redirect para atletas y coaches.
+- [x] Cuatro estados por tarjeta (loading/empty/error/success).
+- [x] Sin grupo `(admin)` ni ruta `/admin` duplicada con F7.
+- [x] `npm run lint` y `npm run build` en verde.
 
 ---
 

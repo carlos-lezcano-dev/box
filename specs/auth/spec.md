@@ -1,7 +1,7 @@
 # Feature: Autenticación
 
 **Feature ID:** F1
-**Carpeta de implementación:** `app/(auth)/`, `api/auth/`, `proxy.ts`, `src/api/auth.ts`
+**Carpeta de implementación:** `app/(auth)/`, `app/api/auth/`, `proxy.ts` (raíz), `src/api/auth.ts`
 **Requisitos:** RF-FE-01, RF-FE-02
 **Depende de:** `box-core` `POST /api/v1/auth/login`, `GET /api/v1/users/me`
 **Habilita:** todas las rutas privadas del frontend

@@ -28,21 +28,23 @@
 | Componentes | `page.tsx` y `layout.tsx` son Server Components por defecto. Agregar `'use client'` solo al archivo que necesita estado/eventos/browser APIs. |
 | Props dinámicas | `params` y `searchParams` son `Promise`. Usar `await props.params` / `await props.searchParams` o `use()` en Client Components. Usar los helpers globales `PageProps<'/ruta'>` y `LayoutProps<'/ruta'>`. |
 | Rutas | Agrupar solo con `(auth)` y `(app)`: los paréntesis **no** aparecen en la URL. El segmento `/admin/**` vive dentro de `(app)` con su propio `layout.tsx` de rol. Evitar que dos grupos resuelvan la misma ruta. |
-| Middleware | El archivo se llama `proxy.ts` y exporta `proxy()` (o default). `middleware.ts` está deprecado. |
+| Middleware | El archivo se llama `proxy.ts`, se crea en la **raíz del proyecto** (al mismo nivel que `app/`) y exporta `proxy()` (o default). `middleware.ts` está deprecado; `config.matcher` evita interceptar estáticos. |
 | Cookies | `await cookies()` en Server Components/Route Handlers. Escribir cookies solo en Route Handlers o Server Functions. Usar `httpOnly`, `secure` en producción y `sameSite: 'lax'`. |
-| Fetch en servidor | Lecturas autenticadas con `cache: 'no-store'`. No mezclar `revalidate` con `cache: 'no-store'`. El mismo `fetch` GET se memoiza dentro de un render pass. |
+| Cache Components | `cacheComponents: true` está activo. Toda lectura de `cookies()`, `headers()`, `searchParams` o `fetch` dinámico debe estar detrás de `<Suspense>`; leer cookies fuera de un boundary es error de build. No meter `cookies()`/`headers()` en `use cache` normal: usar `use cache: private` o extraer un id. |
+| Fetch en servidor | Lecturas autenticadas con `cache: 'no-store'`. No mezclar `revalidate` con `cache: 'no-store'`. El mismo `fetch` GET se memoiza dentro de un render pass; no se espera memoización en Route Handlers. |
+| Errores de ruta | `error.tsx` es Client Component y recibe `{ error: unknown, retry: () => void }`. El botón llama a `retry()` (re-fetch y re-render), no a `reset()`. |
 | Metadata | `export const metadata` en `layout.tsx`; no agregar `<head>` manual. |
-| Imágenes | Usar `next/image` con `width`/`height` o `fill`. |
+| Imágenes | Usar `next/image` con `width`/`height` o `fill`. `priority` está deprecado: usar `preload`, `loading="eager"` o `fetchPriority="high"`. |
 
 ---
 
 ## 3. Estructura de carpetas objetivo
 
 ```
+proxy.ts                            # raíz del proyecto, al nivel de app/: (F1) redirect
 app/
 ├── layout.tsx                      # root: html/body, fuentes, metadata global
 ├── globals.css                     # @import tailwind + tokens
-├── proxy.ts                        # (F1) redirect de rutas privadas
 ├── (auth)/
 │   └── login/page.tsx              # F1
 ├── (app)/
@@ -58,7 +60,7 @@ app/
 │       ├── schedule/page.tsx       # /admin/schedule (agenda)
 │       ├── schedule/[wodId]/page.tsx # detalle + roster
 │       └── memberships/page.tsx    # /admin/memberships (registro de pagos)
-api/
+app/api/
 └── auth/
     ├── login/route.ts              # F1: set-cookie httpOnly
     └── logout/route.ts             # F1: delete cookie
@@ -218,11 +220,11 @@ Convenciones:
 
 ## 10. Definition of Done transversal
 
-- [ ] Sin `fetch` directo a la API fuera de `src/api/`.
-- [ ] Sin `localStorage` para tokens ni datos sensibles.
-- [ ] Sin `middleware.ts`; se usa `proxy.ts`.
-- [ ] `params`/`searchParams` tratados como promesas.
-- [ ] Errores manejados por `error.code`.
-- [ ] Cuatro estados implementados en cada sección visible.
-- [ ] Copy de la sección 7 verificado.
-- [ ] `npm run lint` y `npm run build` sin errores.
+- [x] Sin `fetch` directo a la API fuera de `src/api/`.
+- [x] Sin `localStorage` para tokens ni datos sensibles.
+- [x] Sin `middleware.ts`; se usa `proxy.ts`.
+- [x] `params`/`searchParams` tratados como promesas.
+- [x] Errores manejados por `error.code`.
+- [x] Cuatro estados implementados en cada sección visible.
+- [x] Copy de la sección 7 verificado.
+- [x] `npm run lint` y `npm run build` sin errores.

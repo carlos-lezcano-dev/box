@@ -39,13 +39,13 @@ Convertir el diseño adjunto y los contratos de `box-core` en especificaciones e
 
 | ID | Feature | Carpeta | Pantalla / sección del diseño | Depende de | Estado |
 |----|---------|---------|-------------------------------|------------|--------|
-| F1 | Autenticación | [`auth/`](./auth/) | Acceso, sesión de «Lucía», rol `Atleta` | box-core `auth`, `users` | Pendiente |
-| F2 | Shell de aplicación | [`app-shell/`](./app-shell/) | Marca **BOX**, sidebar, header, navegación | F1 | Pendiente |
-| F3 | Panel general | [`dashboard/`](./dashboard/) | «Panel general administrativo», «BOX», métricas de operación | F1, F2 | Pendiente |
-| F4 | Membresías y pagos | [`memberships/`](./memberships/) | Chip «Libre mensual» en atleta; vista ADMIN «Registrar pago» | F1, F2 | Pendiente |
-| F5 | Mis reservas | [`my-bookings/`](./my-bookings/) | «Atleta · Mis reservas», «Tu entrenamiento, organizado.», «¿Cancelar tu reserva?» | F1, F2 | Pendiente |
-| F6 | Explorar y reservar clases | [`classes/`](./classes/) | «Atleta · Explorar y reservar clases», «Hola, Lucía…», WOD, franjas | F1, F2, F4 | Pendiente |
-| F7 | Administración | [`admin/`](./admin/) | Usuarios, Agenda de turnos, Detalle de turno, Membresías (ADMIN) | F1, F2, F6 | Pendiente |
+| F1 | Autenticación | [`auth/`](./auth/) | Acceso, sesión de «Lucía», rol `Atleta` | box-core `auth`, `users` | Completo |
+| F2 | Shell de aplicación | [`app-shell/`](./app-shell/) | Marca **BOX**, sidebar, header, navegación | F1 | Completo |
+| F3 | Panel general | [`dashboard/`](./dashboard/) | «Panel general administrativo», «BOX», métricas de operación | F1, F2 | Completo |
+| F4 | Membresías y pagos | [`memberships/`](./memberships/) | Chip «Libre mensual» en atleta; vista ADMIN «Registrar pago» | F1, F2 | Completo |
+| F5 | Mis reservas | [`my-bookings/`](./my-bookings/) | «Atleta · Mis reservas», «Tu entrenamiento, organizado.», «¿Cancelar tu reserva?» | F1, F2 | Completo |
+| F6 | Explorar y reservar clases | [`classes/`](./classes/) | «Atleta · Explorar y reservar clases», «Hola, Lucía…», WOD, franjas | F1, F2, F4 | Completo |
+| F7 | Administración | [`admin/`](./admin/) | Usuarios, Agenda de turnos, Detalle de turno, Membresías (ADMIN) | F1, F2, F6 | Completo |
 
 Cada feature contiene:
 
@@ -159,14 +159,14 @@ Fuente única: `src/lib/nav.ts` (F2). No se crean grupos de ruta paralelos que r
 
 ## 8. Definition of Done global
 
-- [ ] `spec.md`, `api.md` y `plan.md` de la feature actualizados.
-- [ ] Tareas del `plan.md` marcadas `[x]`.
-- [ ] Copy exacto de la captura en los textos visibles.
-- [ ] Cuatro estados (loading/empty/error/success) implementados.
-- [ ] Errores mapeados por `error.code`, no por mensaje.
-- [ ] Navegación por teclado y `aria-*` en controles interactivos.
-- [ ] `npm run lint` y `npm run build` en verde.
-- [ ] Pruebas unitarias y E2E de la feature en verde.
+- [x] `spec.md`, `api.md` y `plan.md` de la feature actualizados.
+- [x] Tareas del `plan.md` marcadas `[x]`.
+- [x] Copy exacto de la captura en los textos visibles.
+- [x] Cuatro estados (loading/empty/error/success) implementados.
+- [x] Errores mapeados por `error.code`, no por mensaje.
+- [x] Navegación por teclado y `aria-*` en controles interactivos.
+- [x] `npm run lint` y `npm run build` en verde.
+- [x] Pruebas unitarias y E2E de la feature en verde.
 
 ---
 

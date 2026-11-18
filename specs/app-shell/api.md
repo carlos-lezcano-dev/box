@@ -29,7 +29,7 @@ Derived fields (no vienen en la API):
 | Valor | Regla |
 |-------|-------|
 | `displayName` | `full_name.trim().split(' ')[0]` o, si está vacío, `email.split('@')[0]`. |
-| `roleLabel` | `ATHLETE → 'Atleta'`, `COACH → 'Coach'`, `ADMIN → 'Admin'`. |
+| `roleLabel` | `ATHLETE → 'Atleta'`, `COACH → 'Entrenador'`, `ADMIN → 'Administrador'` (coherente con RN-FE-ADM-27). |
 | `headerTitle` | Lo aporta la ruta (F5/F6/F7); el shell compone `${roleLabel} · ${headerTitle}`. |
 
 > El tipo `ShellUser` es un subconjunto de `GET /users/me`. El shell no pide `GET /users` (solo ADMIN): eso rompería el inicio de un atleta.

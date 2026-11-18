@@ -43,7 +43,7 @@ El backend es la autoridad: filtrar enlaces es UX; los guards de rol viven en lo
 | RN-FE-SHELL-03 | El enlace activo lleva `aria-current="page"` y un estilo visual inequívoco. |
 | RN-FE-SHELL-04 | En desktop (≥ 1024 px) el sidebar es fijo; en móvil se colapsa y se abre con botón `aria-expanded`/`aria-controls`. |
 | RN-FE-SHELL-05 | El nombre mostrado es `full_name.split(' ')[0]` con fallback a `email.split('@')[0]`; «Lucía» es el dato del diseño. |
-| RN-FE-SHELL-06 | El chip de rol muestra `ATHLETE → 'Atleta'`, `COACH → 'Coach'`, `ADMIN → 'Admin'`. |
+| RN-FE-SHELL-06 | El chip de rol muestra `ATHLETE → 'Atleta'`, `COACH → 'Entrenador'`, `ADMIN → 'Administrador'` (coherente con RN-FE-ADM-27). |
 | RN-FE-SHELL-07 | «Cerrar sesión» llama a `POST /api/auth/logout` y redirige a `/login`. |
 | RN-FE-SHELL-08 | El encabezado compone `rol · título de sección`; el título lo aporta cada feature, el shell solo compone. |
 | RN-FE-SHELL-09 | Si `requireUser()` falla, el layout redirige a `/login`; nunca renderiza un header con datos vacíos. |

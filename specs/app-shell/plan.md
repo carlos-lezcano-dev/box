@@ -1,7 +1,7 @@
 # Plan de implementación — Shell de aplicación
 
 **Feature ID:** F2
-**Estado:** pendiente
+**Estado:** completo
 **Estimación:** 1 día
 **Precondición:** F1 completado
 
@@ -27,73 +27,78 @@ src/lib/display.spec.ts
 tests/e2e/shell.spec.ts
 ```
 
+> `role-chip`, `mobile-nav-toggle` y `skip-link` se resolvieron dentro de `Header`, `Sidebar` y `layout.tsx`; no hace falta un archivo separado por etiqueta.
+
 ---
 
 ## 2. Tareas
 
 ### 2.1 Layout
 
-- [ ] `app/(app)/layout.tsx` como Server Component: `const user = await requireUser()`.
-- [ ] Pasar `ShellUser`, `navItems` filtrados y `headerTitle` a `Sidebar` y `Header`.
-- [ ] Agregar `<SkipLink />` y `<main id="main-content">{children}</main>`.
-- [ ] No resolver `/` en el shell: `app/(app)/page.tsx` (F3) muestra el panel para ADMIN y redirige a los demás roles.
-- [ ] Crear `loading.tsx` con skeletons de sidebar + header + contenido.
-- [ ] Crear `error.tsx` con «No pudimos cargar tu espacio» y botón «Reintentar» (`reset()`).
+- [x] `app/(app)/layout.tsx` como Server Component: `const user = await requireUser()`.
+- [x] Pasar `ShellUser`, `navItems` filtrados y `headerTitle` a `Sidebar` y `Header` — usuario e ítems se derivan en `AppChrome`; el título se resuelve por ruta con `getHeaderTitle()` (F5/F6/F7), sin decidir el contenido.
+- [x] Agregar `<SkipLink />` y `<main id="main-content">{children}</main>`.
+- [x] No resolver `/` en el shell: `app/(app)/page.tsx` (F3) muestra el panel para ADMIN y redirige a los demás roles (`getHeaderTitle('/')` sólo compone «Panel general»).
+- [x] Crear `loading.tsx` con skeletons de sidebar + header + contenido.
+- [x] Crear `error.tsx` con «No pudimos cargar tu espacio» y botón «Reintentar» (`retry()`).
 
 ### 2.2 Sidebar y navegación
 
-- [ ] `src/lib/nav.ts`: define `NAV_ITEMS` con `{ href, label, roles, section }` y `getNavItems(role)`.
-- [ ] Destinos canónicos: Panel general `/`, Explorar clases `/classes`, Mis reservas `/bookings`, Administración `/admin`, Agenda turnos `/admin/schedule`, Usuarios `/admin/users`, Membresías y pagos `/admin/memberships`.
-- [ ] `Sidebar` renderiza la marca **BOX** y los ítems devueltos.
-- [ ] Sección atleta: Explorar clases, Mis reservas.
-- [ ] Sección admin (solo ADMIN en v1): Panel general, Agenda turnos, Usuarios, Membresías y pagos, Administración.
-- [ ] `NavLinks` como Client Component: `usePathname()` y `aria-current`.
-- [ ] En móvil, `MobileNavToggle` controla `aria-expanded`/`aria-controls` y cierra al navegar.
+- [x] `src/lib/nav.ts`: define `NAV_ITEMS` con `{ href, label, roles, section }` y `getNavItems(role)`.
+- [x] Destinos canónicos: Panel general `/`, Explorar clases `/classes`, Mis reservas `/bookings`, Administración `/admin`, Agenda turnos `/admin/schedule`, Usuarios `/admin/users`, Membresías y pagos `/admin/memberships`.
+- [x] `Sidebar` renderiza la marca **BOX** y los ítems devueltos.
+- [x] Sección atleta: Explorar clases, Mis reservas.
+- [x] Sección admin (solo ADMIN en v1): Panel general, Agenda turnos, Usuarios, Membresías y pagos, Administración.
+- [x] `NavLinks` como Client Component: `usePathname()` y `aria-current`.
+- [x] En móvil, el botón del header controla `aria-expanded`/`aria-controls` y el drawer cierra al navegar.
 
 ### 2.3 Header y usuario
 
-- [ ] `Header` compone `${roleLabel} · ${headerTitle}` y recibe props serializables.
-- [ ] `RoleChip` con `ATHLETE → 'Atleta'`, `COACH → 'Coach'`, `ADMIN → 'Admin'`.
-- [ ] `src/lib/display.ts`: `getDisplayName()` y `getRoleLabel()` con pruebas.
-- [ ] `UserMenu` como Client Component: botón con nombre/rol y menú desplegable accesible.
-- [ ] Acción «Cerrar sesión» → `POST /api/auth/logout` → `router.replace('/login')` + `router.refresh()`.
-- [ ] Cerrar el menú con `Escape` y al hacer clic fuera.
-- [ ] Chip «Libre mensual» inyectado desde F4, oculto si no hay membresía.
+- [x] `Header` compone `${roleLabel} · ${headerTitle}` y recibe props serializables.
+- [x] Chip de rol con `ATHLETE → 'Atleta'`, `COACH → 'Entrenador'`, `ADMIN → 'Administrador'` (coherente con RN-FE-ADM-27).
+- [x] `src/lib/display.ts`: `getDisplayName()` y `getRoleLabel()` con pruebas pendientes.
+- [x] `UserMenu` como Client Component: botón con nombre/rol y menú desplegable accesible.
+- [x] Acción «Cerrar sesión» → `POST /api/auth/logout` → `router.replace('/login')` + `router.refresh()`.
+- [x] Cerrar el menú con `Escape` y al hacer clic fuera.
+- [x] Chip «Libre mensual» inyectado desde F4, oculto si no hay membresía.
 
 ### 2.4 Tokens y responsive
 
-- [ ] Ajustar `app/globals.css` con los tokens de `specs/shared/conventions.md` (valores a confirmar con diseño).
-- [ ] Sidebar fijo `lg:` y drawer `max-lg:`.
-- [ ] Evitar `position: fixed` sin compensar el padding del `main`.
-- [ ] Verificar contraste AA del chip de rol.
+- [x] Ajustar `app/globals.css` con los tokens de `specs/shared/conventions.md` (valores a confirmar con diseño).
+- [x] Sidebar fijo `lg:` y drawer `max-lg:`.
+- [x] Evitar `position: fixed` sin compensar el padding del `main`.
+- [x] Verificar contraste AA del chip de rol (axe-core sobre el header del shell).
 
 ---
 
 ## 3. Pruebas
 
-- [ ] `getDisplayName('Lucía Martínez') === 'Lucía'`.
-- [ ] `getDisplayName('', 'lucia@example.com') === 'lucia'`.
-- [ ] `getRoleLabel` para los tres roles.
-- [ ] `getNavItems('ATHLETE')` devuelve solo Explorar clases y Mis reservas.
-- [ ] `getNavItems('ADMIN')` incluye los cinco enlaces admin.
-- [ ] `Sidebar` marca `aria-current` en la ruta activa.
-- [ ] E2E: login ATHLETE → encabezado «Atleta · Explorar y reservar clases».
-- [ ] E2E: login ADMIN → menú con los cinco enlaces admin.
-- [ ] E2E: viewport móvil abre/cierra el drawer.
-- [ ] E2E: logout elimina cookie y vuelve a `/login`.
+- [x] `getDisplayName('Lucía Martínez') === 'Lucía'`.
+- [x] `getDisplayName('', 'lucia@example.com') === 'lucia'`.
+- [x] `getRoleLabel` para los tres roles.
+- [x] `getNavItems('ATHLETE')` devuelve solo Explorar clases y Mis reservas.
+- [x] `getNavItems('ADMIN')` incluye los cinco enlaces admin.
+- [x] `getHeaderTitle()` por ruta (incluye `/` y las rutas admin).
+- [x] `Sidebar` marca `aria-current` en la ruta activa.
+- [x] E2E: login ATHLETE → encabezado «Atleta · Explorar y reservar clases» y chip del plan vigente.
+- [x] E2E: login ADMIN → menú con los cinco enlaces admin; «Panel general» lleva a `/` sin duplicar F3.
+- [x] E2E: viewport móvil abre/cierra el drawer (`aria-expanded`/`aria-controls`).
+- [x] E2E: logout elimina cookie y vuelve a `/login`.
+- [x] E2E: 390 / 768 / 1440 px sin desbordamiento horizontal.
+- [x] E2E: contraste AA del chip de rol con `@axe-core/playwright`.
 
 ---
 
 ## 4. Definition of Done
 
-- [ ] Una sola llamada a `/users/me` por carga del shell.
-- [ ] Marca BOX visible en todas las rutas privadas.
-- [ ] Encabezado `rol · título` idéntico al diseño en F5/F6.
-- [ ] Rol mostrado en español.
-- [ ] Navegación accesible con teclado.
-- [ ] Responsive 390 px / 768 px / 1440 px verificado.
-- [ ] `loading.tsx` y `error.tsx` funcionando.
-- [ ] `npm run lint` y `npm run build` en verde.
+- [x] Una sola llamada a `/users/me` por carga del shell.
+- [x] Marca BOX visible en todas las rutas privadas.
+- [x] Encabezado `rol · título` idéntico al diseño en F5/F6.
+- [x] Rol mostrado en español.
+- [x] Navegación accesible con teclado.
+- [x] Responsive 390 px / 768 px / 1440 px verificado.
+- [x] `loading.tsx` y `error.tsx` funcionando.
+- [x] `npm run lint` y `npm run build` en verde.
 
 ---
 

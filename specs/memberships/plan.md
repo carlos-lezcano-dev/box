@@ -1,7 +1,7 @@
 # Plan de implementación — Membresías y pagos
 
 **Feature ID:** F4
-**Estado:** pendiente
+**Estado:** completo
 **Estimación:** 1 día
 **Precondición:** F1, F2 y Fase 0 (cliente API, formateo)
 
@@ -30,58 +30,58 @@ tests/e2e/memberships.spec.ts
 
 ### 2.1 Datos
 
-- [ ] `src/api/memberships.ts`: `getMyMemberships()` y `getMemberships()` con `cache: 'no-store'` y normalización `data` → arreglo.
-- [ ] `src/lib/membership-view.ts`: `toMembershipView()`, `pickCurrent()`, `getDaysRemaining()`, `getStatusLabel()`.
-- [ ] `pickCurrent()` prioriza `ACTIVE`, luego `end_date` más cercano; si no hay activas, devuelve la más reciente.
-- [ ] Exponer `hasActiveMembership` y `planName` para el chip del encabezado.
+- [x] `src/api/memberships.ts`: `getMyMemberships()` y `getMemberships()` con `cache: 'no-store'` y normalización `data` → arreglo.
+- [x] `src/lib/membership-view.ts`: `toMembershipView()`, `pickCurrent()`, `getDaysRemaining()`, `getStatusLabel()`.
+- [x] `pickCurrent()` prioriza `ACTIVE`, luego `end_date` más cercano; si no hay activas, devuelve la más reciente.
+- [x] Exponer `hasActiveMembership` y `planName` para el chip del encabezado.
 
 ### 2.2 UI de atleta
 
-- [ ] `MembershipChip` muestra `plan_name` («Libre mensual») y se inyecta en F5 y F6 desde el layout.
-- [ ] Si no hay membresía activa, el chip se oculta sin afectar el encabezado.
-- [ ] `page.tsx` renderiza plan, importe formateado, estado, vigencia y aviso de vencimiento próximo.
-- [ ] `MembershipEmptyState` con CTA a `/classes`.
-- [ ] La card no muestra IDs, `notes` internas ni `created_by`.
+- [x] `MembershipChip` muestra `plan_name` («Libre mensual») y se inyecta en F5 y F6 desde el layout.
+- [x] Si no hay membresía activa, el chip se oculta sin afectar el encabezado.
+- [x] `page.tsx` renderiza plan, importe formateado, estado, vigencia y aviso de vencimiento próximo.
+- [x] `MembershipEmptyState` con CTA a `/classes`.
+- [x] La card no muestra IDs, `notes` internas ni `created_by`.
 
 ### 2.3 Vista ADMIN (contrato compartido con F7)
 
-- [ ] `getMemberships({ status, from, to, page, limit })` con `meta.total`.
-- [ ] Copy fijo «Membresías y pagos mensuales» / «Vigencias claras. Cuentas al día.».
-- [ ] Acción «Registrar pago» con `Idempotency-Key` estable por intención.
-- [ ] No renderizar tarjetas para las métricas `130`/`18`/`$6.240.000` hasta confirmar sus rótulos.
+- [x] `getMemberships({ status, from, to, page, limit })` con `meta.total`.
+- [x] Copy fijo «Membresías y pagos mensuales» / «Vigencias claras. Cuentas al día.».
+- [x] Acción «Registrar pago» con `Idempotency-Key` estable por intención.
+- [x] No renderizar tarjetas para las métricas `130`/`18`/`$6.240.000` hasta confirmar sus rótulos.
 
 ### 2.4 Estados y responsive
 
-- [ ] `loading.tsx` con skeleton de la card y del chip.
-- [ ] Error local con `role="alert"` y botón «Reintentar».
-- [ ] Card apilada en móvil, ancho completo; en desktop comparte grid con el resto del contenido.
-- [ ] Contraste del badge de estado verificado.
+- [x] `loading.tsx` con skeleton de la card y del chip.
+- [x] Error local con `role="alert"` y botón «Reintentar».
+- [x] Card apilada en móvil, ancho completo; en desktop comparte grid con el resto del contenido.
+- [x] Contraste del badge de estado verificado.
 
 ---
 
 ## 3. Pruebas
 
-- [ ] `getDaysRemaining('2026-11-30', '2026-11-17') === 13`.
-- [ ] `getDaysRemaining('2026-11-17', '2026-11-17') === 0` → «Vigente hasta hoy».
-- [ ] `getStatusLabel` para los cuatro estados.
-- [ ] `pickCurrent()` elige la ACTIVE con `end_date` más próximo.
-- [ ] `formatCurrency(6240000) === '$6.240.000'`.
-- [ ] `MembershipChip` se oculta con `planName` nulo.
-- [ ] E2E: chip «Libre mensual» visible en `/classes` y `/bookings`.
-- [ ] E2E: plan e importe exactos del diseño en `/memberships`.
-- [ ] E2E: membresía vencida no muestra badge «Al día».
+- [x] `getDaysRemaining('2026-11-30', '2026-11-17') === 13`.
+- [x] `getDaysRemaining('2026-11-17', '2026-11-17') === 0` → «Vigente hasta hoy».
+- [x] `getStatusLabel` para los cuatro estados.
+- [x] `pickCurrent()` elige la ACTIVE con `end_date` más próximo.
+- [x] `formatCurrency(6240000) === '$6.240.000'`.
+- [x] `MembershipChip` se oculta con `planName` nulo.
+- [x] E2E: chip «Libre mensual» visible en `/classes` y `/bookings`.
+- [x] E2E: plan e importe exactos del diseño en `/memberships`.
+- [x] E2E: membresía vencida no muestra badge «Al día».
 
 ---
 
 ## 4. Definition of Done
 
-- [ ] Chip reutilizable por F5 y F6 con props serializables.
-- [ ] Importe con formato `es-PY` / PYG.
-- [ ] `end_date` inclusivo implementado.
-- [ ] Cuatro estados de UI.
-- [ ] Contrato de escritura ADMIN documentado y consumido por F7.
-- [ ] Métricas no confirmadas ausentes del DOM.
-- [ ] `npm run lint` y `npm run build` en verde.
+- [x] Chip reutilizable por F5 y F6 con props serializables.
+- [x] Importe con formato `es-PY` / PYG.
+- [x] `end_date` inclusivo implementado.
+- [x] Cuatro estados de UI.
+- [x] Contrato de escritura ADMIN documentado y consumido por F7.
+- [x] Métricas no confirmadas ausentes del DOM.
+- [x] `npm run lint` y `npm run build` en verde.
 
 ---
 

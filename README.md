@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BOX · frontend
 
-## Getting Started
+Frontend de BOX construido con Next.js 16, React 19, Tailwind 4 y TypeScript strict.
 
-First, run the development server:
+## Configuración
+
+Copiá `.env.example` a `.env.local` si la API no está en el puerto por defecto:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+La variable apunta a `box-core` **incluido el prefijo `/api/v1`**. Si no se define, el cliente usa ese valor por defecto.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Desarrollo
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+La API corre en el puerto `3000`, así que el frontend debe iniciarse en otro puerto:
 
-## Learn More
+```bash
+npm.cmd run dev -- -p 3001
+```
 
-To learn more about Next.js, take a look at the following resources:
+> En Windows PowerShell usá `npm.cmd`; `npm run ...` puede fallar por la política de ejecución de scripts.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Abrí http://localhost:3001. Las rutas privadas redirigen a `/login`; la cookie de sesión es `httpOnly` y se escribe desde los Route Handlers de `app/api/auth/`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Verificación
 
-## Deploy on Vercel
+```bash
+npm.cmd run lint
+npm.cmd run build
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Estructura
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `specs/` — contratos, diseño y planes por feature.
+- `app/(auth)/` — login.
+- `app/(app)/` — shell y rutas privadas, incluida `admin/`.
+- `src/api/` — cliente HTTP y acceso a endpoints.
+- `src/actions/` — Server Actions para escrituras.
+- `src/lib/` — sesión, errores, fechas y helpers compartidos.

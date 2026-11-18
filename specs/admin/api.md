@@ -24,9 +24,15 @@ type ErrorEnvelope = {
     message: string
     details?: Array<{ field: string; rule: string; message: string }>
   }
-  request_id: string
+  request_id: string // solo en errores; nunca en respuestas exitosas
 }
 ```
+
+Detalles confirmados contra el código real de `box-core`:
+
+- `meta` solo aparece en listados paginados; `meta.total_pages === 0` cuando `total === 0` (no 1).
+- `message` (y opcionalmente `status` en raíz) solo aparece cuando el handler usa `withMessage()`.
+- `request_id` también se devuelve como cabecera `X-Request-Id`; el cliente puede enviar esa cabecera con un valor `^[A-Za-z0-9._-]{8,128}$` para correlacionar.
 
 Reglas del cliente:
 
@@ -37,6 +43,7 @@ Reglas del cliente:
 5. Toda lectura autenticada usa `cache: 'no-store'`; no se mezcla con `revalidate`.
 6. Ningún componente llama a `fetch` directo: las funciones viven en `src/api/admin-*.ts`.
 7. Tras una escritura exitosa basta `router.refresh()`, porque no hay caché persistente.
+8. La paginación deshabilita «siguiente» con `page >= meta.total_pages` **o** `meta.total_pages === 0`.
 
 ---
 
@@ -97,6 +104,8 @@ type UsersResponse = {
   meta: { page: number; limit: number; total: number; total_pages: number }
 }
 ```
+
+> `is_active` admite `"true"`, `"false"`, `"1"` y `"0"`. El listado desempata por `user_id asc`. `meta.total_pages` es `0` si `total === 0`.
 
 > El DTO no expone `updated_at`. Por eso «Hoy, 09:12» se deriva de `created_at` y se rotula «Alta» como hipótesis.
 
@@ -171,9 +180,11 @@ Headers: `Content-Type: application/json` y, desde F7, `Authorization: Bearer <t
 | Parámetro | Default | Regla |
 |-----------|---------|-------|
 | `from` | hoy 00:00 en `America/Asuncion` | ISO-8601 UTC con `Z` |
-| `to` | `from + 7 días` | ISO UTC; rango ≤ 31 días |
+| `to` | `from + 7 días` | ISO UTC; **`to` exclusivo** (`start_time >= from AND start_time < to`); rango ≤ 31 días |
 | `coach_id` | — | UUID |
 | `page` / `limit` | `1` / `20` | 1–100 |
+
+Si se envía solo `from`, el backend calcula `to = from + 7 × 24 h`. Si se envía solo `to`, `from = hoy 00:00` en `America/Asuncion`. Un rango > 31 días responde **400 `VALIDATION_ERROR`** con `details: [{ field: 'to', rule: 'range' }]`. El validador acepta `Z` u offset `±HH:MM`, pero el frontend siempre envía `.toISOString()` con `Z`.
 
 ```ts
 type AdminWodsResponse = {
@@ -196,6 +207,14 @@ type AdminWodsResponse = {
 ```
 
 > `coach_full_name` no viene en el DTO de `/wods`. Se obtiene desde `GET /users` o desde el roster cuando hace falta mostrar «Carolina Molina».
+
+| HTTP | `code` | Acción en UI |
+|------|--------|--------------|
+| 400 | `VALIDATION_ERROR` | Corregir filtros; si `details[].field === 'to'` y `rule === 'range'`, acortar el rango a ≤ 31 días |
+| 401 | `AUTH_*` | Limpiar sesión y redirect `/login` |
+| 429 | `RATE_LIMITED` | Mostrar `Retry-After` |
+
+> Como `to` es exclusivo, la agenda lunes → viernes debe enviar `to = sábado 00:00` en `America/Asuncion` (o el instante inmediatamente posterior al último turno del viernes). Enviar `to = viernes 00:00` excluiría todo el viernes.
 
 ### 4.2 Selector de coach
 
@@ -398,18 +417,21 @@ Content-Type: application/json
 Idempotency-Key: <uuid>
 ```
 
+**Confirmación contra el código real:** `Idempotency-Key` es **opcional** en el backend (`@ApiHeader({ required: false })`). El frontend la envía siempre porque es la única forma de deduplicar, pero **no debe esperar un 400 por omitirla**. El 409 `IDEMPOTENCY_CONFLICT` solo aparece si la misma clave se reutiliza con un body distinto.
+
 La clave se genera al abrir el diálogo y se reutiliza en reintentos de red. Se regenera solo si el usuario cambia el body o confirma un `IDEMPOTENCY_CONFLICT`.
 
 | HTTP | `code` | Acción en UI |
 |------|--------|--------------|
-| 400 | `VALIDATION_ERROR` | Errores por `details[].field` |
+| 400 | `VALIDATION_ERROR` | Errores por `details[].field`; si es `amount_paid`, corregir el importe |
 | 401 | `AUTH_*` | Redirect `/login` |
 | 403 | `AUTH_FORBIDDEN` | Acceso restringido |
 | 404 | `USER_NOT_FOUND` | Marcar el selector de atleta |
 | 409 | `IDEMPOTENCY_CONFLICT` | Pedir confirmación y regenerar clave |
 | 422 | `MEMBERSHIP_INVALID_PERIOD` | Corregir rango de fechas |
-| 422 | `MEMBERSHIP_INVALID_AMOUNT` | Corregir importe |
 | 429 | `RATE_LIMITED` | Mostrar `Retry-After` |
+
+> `MEMBERSHIP_INVALID_AMOUNT` (422) existe en el catálogo del backend como defensa en profundidad, pero el DTO valida `amount_paid` antes (`> 0`, `≤ 1 000 000`, `≤ 2` decimales). Por HTTP llega **400 `VALIDATION_ERROR`** con `details[].field === 'amount_paid'`. El formulario debe manejar ambos códigos; el que realmente se verá es el 400.
 
 > El diseño muestra `$6.240.000`, pero el contrato limita cada registro a `1 000 000`. No se precarga ese valor en `amount_paid`.
 
@@ -440,7 +462,7 @@ Errores: `VALIDATION_ERROR` (400), `AUTH_*` (401), `AUTH_FORBIDDEN` (403), `MEMB
 | Sin permisos | `AUTH_FORBIDDEN`, `USER_ROLE_NOT_ALLOWED` | «Acceso restringido»; no redirect a login |
 | No encontrado | `USER_NOT_FOUND`, `WOD_NOT_FOUND`, `BOOKING_NOT_FOUND`, `MEMBERSHIP_NOT_FOUND` | Quitar fila o cerrar detalle y refrescar |
 | Conflicto | `USER_EMAIL_TAKEN`, `BOOKING_ALREADY_CANCELLED`, `WOD_ALREADY_STARTED`, `WOD_CAPACITY_BELOW_BOOKINGS`, `MEMBERSHIP_INVALID_TRANSITION`, `IDEMPOTENCY_CONFLICT` | Acción específica por pantalla |
-| Validación / regla de negocio | `VALIDATION_ERROR`, `WOD_INVALID_TIME_RANGE`, `WOD_START_IN_PAST`, `WOD_COACH_INVALID`, `MEMBERSHIP_INVALID_PERIOD`, `MEMBERSHIP_INVALID_AMOUNT` | Mensaje en el campo correspondiente |
+| Validación / regla de negocio | `VALIDATION_ERROR` (incluye importe inválido y rango > 31 días), `WOD_INVALID_TIME_RANGE`, `WOD_START_IN_PAST`, `WOD_COACH_INVALID`, `MEMBERSHIP_INVALID_PERIOD` | Mensaje en el campo correspondiente; `MEMBERSHIP_INVALID_AMOUNT` se acepta por robustez pero no llega por HTTP |
 | Límite | `RATE_LIMITED` | Deshabilitar acción y mostrar `Retry-After` |
 | Caída del servicio | `INTERNAL_ERROR`, `SERVICE_UNAVAILABLE` | `role="alert"` con `request_id` y «Reintentar» |
 
@@ -450,9 +472,11 @@ Tras cualquier escritura exitosa: `router.refresh()`. Como las lecturas son `no-
 
 ## 8. Zona horaria, idempotencia y pendientes
 
-- Transporte: todo datetime viaja en ISO UTC con `Z`. Fechas de membresía son `YYYY-MM-DD` sin hora.
+- Transporte: todo datetime viaja en ISO UTC con `Z`. Fechas de membresía son `YYYY-MM-DD` sin hora. El backend acepta offsets `±HH:MM`, pero el frontend siempre envía `.toISOString()`.
 - Presentación: `Intl.DateTimeFormat('es-PY', { timeZone: 'America/Asuncion', ... })` mediante los helpers de F6.
-- `from`/`to` de WODs se calculan en `America/Asuncion` y se convierten a UTC antes de enviarlos.
-- `from`/`to` de membresías filtran `end_date`, no la fecha de pago.
-- `Idempotency-Key` obligatoria en `POST /memberships`; `POST /bookings` no se usa en F7 (solo se cancelan reservas).
+- `from`/`to` de WODs se calculan en `America/Asuncion` y se convierten a UTC antes de enviarlos. `to` es exclusivo, así que la agenda semanal envía el sábado `00:00` como `to`.
+- `from`/`to` de membresías filtran `end_date` de forma inclusiva, no la fecha de pago.
+- `Idempotency-Key`: el backend la trata como opcional en `POST /memberships`; F7 la envía siempre para deduplicar. `POST /bookings` no se usa en F7 (solo se cancelan reservas).
+- `POST /users/register` es `@OptionalAuth()`: un token expirado adjunto provoca 401. El cliente de F7 no debe reenviar la cookie de sesión en esa llamada, o debe renovarla antes.
+- RBAC real: solo son ADMIN-only `GET /users`, `GET /users/:id`, `DELETE /wods/:id` y `GET/POST/PATCH /memberships`. `GET /wods`, `GET /wods/:id` y `GET /bookings/me` están disponibles para cualquier usuario autenticado. El bloqueo de F7 para ATHLETE es del layout, no un 403 universal del backend.
 - Pendiente de confirmar: significado de las cuatro métricas de membresías, origen de «Sala principal», taxonomía de «Tipo: todos», destino de «Ver vencidas» y correspondencia entre iniciales y nombres del OCR.

@@ -1,7 +1,7 @@
 # Plan de implementación — Mis reservas
 
 **Feature ID:** F5
-**Estado:** pendiente
+**Estado:** completo
 **Estimación:** 1 día
 **Precondición:** F1, F2 y contrato `GET /bookings/me` disponible
 
@@ -31,57 +31,57 @@ tests/e2e/bookings.spec.ts
 
 ### 2.1 Lectura
 
-- [ ] `src/api/bookings.ts`: `getMyBookings()` con `cache: 'no-store'`.
-- [ ] `src/lib/booking-view.ts`: `toBookingView()`, `filterActive()`, `sortByStartTime()`, `getStatusLabel()`.
-- [ ] Normalizar `wod` anidado o resolver con `GET /wods/:id` si el contrato no lo trae.
-- [ ] `page.tsx` con encabezado `Atleta · Mis reservas` (F2) y subtítulo `Tu entrenamiento, organizado.`.
-- [ ] `BookingsEmptyState` con CTA a `/classes`.
+- [x] `src/api/bookings.ts`: `getMyBookings()` con `cache: 'no-store'`.
+- [x] `src/lib/booking-view.ts`: `toBookingView()`, `filterActive()`, `sortByStartTime()`, `getStatusLabel()`.
+- [x] Normalizar `wod` anidado o resolver con `GET /wods/:id` si el contrato no lo trae.
+- [x] `page.tsx` con encabezado `Atleta · Mis reservas` (F2) y subtítulo `Tu entrenamiento, organizado.`.
+- [x] `BookingsEmptyState` con CTA a `/classes`.
 
 ### 2.2 Cancelación
 
-- [ ] `useCancelBooking()` hook Client Component:
+- [x] `useCancelBooking()` hook Client Component:
       llama `DELETE /bookings/:id`, deshabilita botón durante la request y expone `error` tipado.
-- [ ] `CancelBookingDialog` con título exacto `¿Cancelar tu reserva?`, nombre del turno, «Volver» y «Confirmar cancelación».
-- [ ] Foco inicial en «Volver», cierre con `Escape` y bloqueo de scroll de fondo.
-- [ ] Tras éxito: `router.refresh()`, aviso `role="status"` y `promoted` message cuando aplique.
-- [ ] Mapear errores por `code` según `api.md`.
+- [x] `CancelBookingDialog` con título exacto `¿Cancelar tu reserva?`, nombre del turno, «Volver» y «Confirmar cancelación».
+- [x] Foco inicial en «Volver», cierre con `Escape` y bloqueo de scroll de fondo.
+- [x] Tras éxito: `router.refresh()`, aviso `role="status"` y `promoted` message cuando aplique.
+- [x] Mapear errores por `code` según `api.md`.
 
 ### 2.3 Agrupación y chip de membresía
 
-- [ ] `BookingGroup` separa «Reservas confirmadas» y «Lista de espera» según `status`.
-- [ ] Inyectar el chip «Libre mensual» desde F4; ocultarlo si no hay membresía activa.
+- [x] `BookingGroup` separa «Reservas confirmadas» y «Lista de espera» según `status`.
+- [x] Inyectar el chip «Libre mensual» desde F4; ocultarlo si no hay membresía activa.
 
 ### 2.4 Responsive y a11y
 
-- [ ] Lista en filas `md:` y tarjetas apiladas en móvil.
-- [ ] Badge de estado con texto + color.
-- [ ] `aria-live="polite"` para avisos de cancelación/promoción.
-- [ ] `loading.tsx` con 3 skeletons.
+- [x] Lista en filas `md:` y tarjetas apiladas en móvil.
+- [x] Badge de estado con texto + color.
+- [x] `aria-live="polite"` para avisos de cancelación/promoción.
+- [x] `loading.tsx` con 3 skeletons.
 
 ---
 
 ## 3. Pruebas
 
-- [ ] `filterActive()` excluye `CANCELLED` y `NOSHOW`.
-- [ ] `sortByStartTime()` ordena por ISO string.
-- [ ] `getStatusLabel()` para `CONFIRMED`/`WAITLIST`/`CANCELLED`/`NOSHOW`.
-- [ ] No se muestra `#null` cuando `waitlist_position` es `null`.
-- [ ] Diálogo abre con foco en «Volver» y cierra con `Escape`.
-- [ ] Botón deshabilitado durante la request.
-- [ ] E2E: cancelar con `promoted: true` muestra aviso.
-- [ ] E2E: `BOOKING_ALREADY_CANCELLED` recarga la lista.
-- [ ] E2E: estado vacío con CTA a `/classes`.
+- [x] `filterActive()` excluye `CANCELLED` y `NOSHOW`.
+- [x] `sortByStartTime()` ordena por ISO string.
+- [x] `getStatusLabel()` para `CONFIRMED`/`WAITLIST`/`CANCELLED`/`NOSHOW`.
+- [x] No se muestra `#null` cuando `waitlist_position` es `null`.
+- [x] Diálogo abre con foco en «Volver» y cierra con `Escape`.
+- [x] Botón deshabilitado durante la request.
+- [x] E2E: cancelar con `promoted: true` muestra aviso.
+- [x] E2E: `BOOKING_ALREADY_CANCELLED` recarga la lista.
+- [x] E2E: estado vacío con CTA a `/classes`.
 
 ---
 
 ## 4. Definition of Done
 
-- [ ] Copy exacto `Atleta · Mis reservas`, `Tu entrenamiento, organizado.`, `Reservas confirmadas`, `Lista de espera`, `¿Cancelar tu reserva?`.
-- [ ] Posición de waitlist visible como texto.
-- [ ] Cancelación no optimista: refleja la decisión del backend.
-- [ ] Cuatro estados de UI.
-- [ ] Diálogo accesible.
-- [ ] `npm run lint` y `npm run build` en verde.
+- [x] Copy exacto `Atleta · Mis reservas`, `Tu entrenamiento, organizado.`, `Reservas confirmadas`, `Lista de espera`, `¿Cancelar tu reserva?`.
+- [x] Posición de waitlist visible como texto.
+- [x] Cancelación no optimista: refleja la decisión del backend.
+- [x] Cuatro estados de UI.
+- [x] Diálogo accesible.
+- [x] `npm run lint` y `npm run build` en verde.
 
 ---
 
